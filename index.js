@@ -7,6 +7,9 @@ const express = require('express')
 //import jswebtoken
 const jwt=require('jsonwebtoken')
 
+//import cors
+const cors=require('cors')
+
 //import data service
 
 const dataService = require('./services/data.services')  
@@ -14,6 +17,11 @@ const dataService = require('./services/data.services')
 //server app creation using expres
 
 const app = express()
+
+// cores use in app
+app.use(cors({
+    origin:'http://localhost:4200'
+}))
 
 //parse json data
 
@@ -36,6 +44,7 @@ const jwtMiddleware=(req,res,next)=>{
     //fetch token
     try{
         token = req.headers['x-access-token']
+        console.log(token);
         //verify token
         const data =jwt.verify(token,'supersecretkey12345')
         console.log(data);
@@ -55,53 +64,61 @@ const jwtMiddleware=(req,res,next)=>{
 
 //register API
 app.post('/register', (req, res) => {
-    const result = dataService.register(req.body.acno, req.body.username, req.body.password)
+    dataService.register(req.body.acno, req.body.username, req.body.password)
+        .then(result=>{
+            res.status(result.statusCode).json(result)
+
+        })
     // if(result){
     //     res.send("resgister successfully")
     // }else{
     //     res.send("already registered....please login")
     // }
 
-    res.status(result.statusCode).json(result)
 
 })
 
 //login API
 
 app.post('/login', (req, res) => {
-    const result = dataService.login(req.body.acno, req.body.pswd)
+    dataService.login(req.body.acno, req.body.pswd)
+    .then(result=>{
+        res.status(result.statusCode).json(result)
 
-    res.status(result.statusCode).json(result)
+    })
 
 })
 
 //deposit API
 
 app.post('/deposit',jwtMiddleware, (req, res) => {
-    const result = dataService.deposit(req.body.acno, req.body.password, req.body.amt)
+    dataService.deposit(req.body.acno, req.body.password, req.body.amt)
+    .then(result=>{
+        res.status(result.statusCode).json(result)
 
-    res.status(result.statusCode).json(result)
+    })
 
 })
 
 //withdraw API
 
 app.post('/withdraw',jwtMiddleware, (req, res) => {
-    const result = dataService.withdraw(req.body.acno, req.body.password, req.body.amt)
+    dataService.withdraw(req.body.acno, req.body.password, req.body.amt)
+    .then(result=>{
+        res.status(result.statusCode).json(result)
 
-    res.status(result.statusCode).json(result)
+    })
 
 })
-
-
 
 
 //transaction API
 
 app.post('/transaction',jwtMiddleware, (req, res) => {
-    const result = dataService.getTransaction(req.body.acno)
-
-    res.status(result.statusCode).json(result)
+    dataService.getTransaction(req.body.acno)
+    .then(result=>{
+        res.status(result.statusCode).json(result)
+    })
 
 })
 
