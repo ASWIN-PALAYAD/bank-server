@@ -88,12 +88,19 @@ const login = (acno, pswd) => {
 
 //deposit aync
 
-const deposit = (acno, password, amt) => {
+const deposit = (req,acno, password, amt) => {
   var amount = parseInt(amt)
   return db.User.findOne({
     acno,password
   }).then(user=>{
     if(user){
+      if(acno != req.currentAcno){
+        return{
+          status:false,
+          message:"permition denied",
+          statusCode: 401
+        }
+      }
       user.balance+= amount
       user.transaction.push({
         type: "CREDIT",
@@ -118,13 +125,20 @@ const deposit = (acno, password, amt) => {
 
 //withdraw
 
-const withdraw = (acno, password, amt) => {
+const withdraw = (req,acno, password, amt) => {
   var amount = parseInt(amt)
 
   return db.User.findOne({
     acno,password
   }).then(user=>{
     if(user){
+      if(acno != req.currentAcno){
+        return{
+          status:false,
+          message:"permition denied",
+          statusCode: 401
+        }
+      }
       if (user.balance > amount) {
         user.transaction.push({
           type: "DEBIT",
@@ -181,7 +195,35 @@ const getTransaction = (acno) => {
   
 
 }
+
+//delete acc
+
+
+const deleteAcc =(acno)=>{
+ return db.User.findOneAndDelete({
+  acno
+ }).then(user=>{
+  if(!user){
+    return{
+      status: false,
+        message: "operation failed",
+        statusCode: 401,
+    }
+  }else{
+    return{
+      status: true,
+          statusCode: 200,
+          message : "successfully deleted"
+    }
+  }
+
+ 
+ })
+}
+
+
+
 //export
 module.exports = {
-  register, login, deposit, withdraw, getTransaction
+  register, login, deposit, withdraw, getTransaction,deleteAcc
 }
